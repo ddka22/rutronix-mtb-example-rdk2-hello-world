@@ -66,21 +66,9 @@ void btn2_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event);
 
 /*A global variable for switching LEDs*/
 _Bool led_select = false;
+
 /* Variable for storing character read from terminal */
 uint8_t uart_read_value;
-
-cyhal_gpio_callback_data_t btn1_data =
-{
-		.callback = btn1_interrupt_handler,
-		.callback_arg = NULL,
-
-};
-
-cyhal_gpio_callback_data_t btn2_data =
-{
-		.callback = btn2_interrupt_handler,
-		.callback_arg = NULL,
-};
 
 int main(void)
 {
@@ -90,7 +78,7 @@ int main(void)
     result = cybsp_init() ;
     if (result != CY_RSLT_SUCCESS)
     {
-    	handle_error();
+        handle_error();
     }
 
     __enable_irq();
@@ -112,8 +100,8 @@ int main(void)
     {handle_error();}
 
     /*Register callback functions */
-    cyhal_gpio_register_callback(USER_BTN1, &btn1_data);
-    cyhal_gpio_register_callback(USER_BTN2, &btn2_data);
+    cyhal_gpio_register_callback(USER_BTN1, &btn1_interrupt_handler, NULL);
+    cyhal_gpio_register_callback(USER_BTN2, &btn2_interrupt_handler, NULL);
 
     /* Enable falling edge interrupt events */
     cyhal_gpio_enable_event(USER_BTN1, CYHAL_GPIO_IRQ_FALL, BTN_IRQ_PRIORITY, true);
@@ -131,46 +119,46 @@ int main(void)
 
     for (;;)
     {
-    	/* Toggle the LED*/
-    	if(led_select)
-    	{
-    		cyhal_gpio_write(LED1, CYBSP_LED_STATE_OFF);
-    		cyhal_gpio_toggle(LED2);
-    	}
-    	else
-    	{
-    		cyhal_gpio_write(LED2, CYBSP_LED_STATE_OFF);
-    		cyhal_gpio_toggle(LED1);
-    	}
+        /* Toggle the LED*/
+        if(led_select)
+        {
+            cyhal_gpio_write(LED1, CYBSP_LED_STATE_OFF);
+            cyhal_gpio_toggle(LED2);
+        }
+        else
+        {
+            cyhal_gpio_write(LED2, CYBSP_LED_STATE_OFF);
+            cyhal_gpio_toggle(LED1);
+        }
 
         /* Check if 'Enter' key was pressed */
         if (cyhal_uart_getc(&cy_retarget_io_uart_obj, &uart_read_value, 1) == CY_RSLT_SUCCESS)
         {
             if (uart_read_value == '\r')
             {
-            	led_select = !led_select;
+                led_select = !led_select;
             }
 
             /* Declare LED status*/
             if(led_select)
             {
-            	printf("LED2 is selected.\r\n");
+                printf("LED2 is selected.\r\n");
             }
             else
             {
-            	printf("LED1 is selected.\r\n");
+                printf("LED1 is selected.\r\n");
             }
         }
 
-    	/*Delay 500 milliseconds*/
-    	CyDelay(500);
+        /*Delay 500 milliseconds*/
+        CyDelay(500);
     }
 }
 
 /* Interrupt handler callback function */
 void btn1_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event)
 {
-	CY_UNUSED_PARAMETER(handler_arg);
+    CY_UNUSED_PARAMETER(handler_arg);
     CY_UNUSED_PARAMETER(event);
 
     /*Selects LED2*/
@@ -181,7 +169,7 @@ void btn1_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event)
 /* Interrupt handler callback function */
 void btn2_interrupt_handler(void *handler_arg, cyhal_gpio_event_t event)
 {
-	CY_UNUSED_PARAMETER(handler_arg);
+    CY_UNUSED_PARAMETER(handler_arg);
     CY_UNUSED_PARAMETER(event);
 
     /*Selects LED1*/
